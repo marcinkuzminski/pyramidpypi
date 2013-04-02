@@ -74,7 +74,10 @@ def list_versions(request):
                       'Using proxy.' % (package))
         pypi_server = settings['pypi_server']
 
-        packages, links = get_external_pypi_links(pypi_server, package)
+        try:
+            packages, links = get_external_pypi_links(pypi_server, package)
+        except HTTPException as e:
+            packages = links = []
 
     else:
         package_list = os.listdir(package_path)

@@ -7,6 +7,7 @@ import urlparse
 import requests
 import hashlib
 
+import pyramid
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest, HTTPOk, HTTPNotFound, \
@@ -178,6 +179,7 @@ def _get_external_pypi_links(pypi_server, package):
 @view_config(route_name='upload')
 def upload(request):
     """Receive package from `python setup.py sdist upload -r localeggserver`"""
+    settings = pyramid.threadlocal.get_current_registry().settings
 
     name = request.params.get('name', '').lower()
     version = request.params.get('version')
@@ -187,7 +189,7 @@ def upload(request):
     if not (name and version and content.file and action == 'file_upload'):
         raise HTTPBadRequest()
 
-    path = os.path.join(request.registry.settings['egg_path'], name)
+    path = os.path.join(settings['egg_path'], name)
 
     if not os.path.exists(path):
         os.makedirs(path)
@@ -201,9 +203,10 @@ def upload(request):
 @view_config(route_name='list_all', renderer='package_list.mako')
 def pypi_listing(request):
     """List all available packages eggs including different versions"""
+    settings = pyramid.threadlocal.get_current_registry().settings
 
-    egg_path = request.registry.settings['egg_path']
-    egg_url = request.registry.settings['egg_url']
+    egg_path = settings['egg_path']
+    egg_url = settings['egg_url']
     packages = glob.glob(os.path.join(egg_path, '*', '*'))
     links = ['..%s%s' % (egg_url, p[len(egg_path):]) for p in packages]
     packages = [os.path.split(p)[1] for p in packages]
@@ -217,8 +220,9 @@ def list_versions(request):
     # TODO: force remote should be dynamic so we don't hit pypi
     # everytime we want to read package versions
     force_remote = True
-    egg_path = request.registry.settings['egg_path']
-    proxy_mode = asbool(request.registry.settings['proxy_mode'])
+    settings = pyramid.threadlocal.get_current_registry().settings
+    egg_path = settings['egg_path']
+    proxy_mode = asbool(settings['proxy_mode'])
     package = request.matchdict.get('package')
     package_path = os.path.join(egg_path, package)
 
@@ -228,7 +232,8 @@ def list_versions(request):
         else:
             log.debug('Did not found package: `%s` in local repository. '
                       'Using proxy.' % (package))
-        pypi_server = request.registry.settings['pypi_server']
+        pypi_server = settings['pypi_server']
+        
         packages, links = _get_external_pypi_links(pypi_server, package)
 
     else:
@@ -257,8 +262,8 @@ def list_packages(request):
     List available packages with link to the different versions. It's
     equivalent of calling pypi.python.org/simple
     """
-
-    egg_path = request.registry.settings['egg_path']
+    settings = pyramid.threadlocal.get_current_registry().settings
+    egg_path = settings['egg_path']
     if not os.path.exists(egg_path):
         os.makedirs(egg_path)
     packages = os.listdir(os.path.join(egg_path))
@@ -270,14 +275,15 @@ def list_packages(request):
 @view_config(route_name='get_package')
 @view_config(route_name='get_package_h')
 def get_package(request):
+    settings = pyramid.threadlocal.get_current_registry().settings
     package_type = request.matchdict.get('package_type')
     letter = request.matchdict.get('letter')
     package_name = request.matchdict.get('package_name')
     package_file = request.matchdict.get('package_file')
-    pypi_server = request.registry.settings['pypi_server']
+    pypi_server = settings['pypi_server']
     log.debug('Downloading: `%s`', package_file)
 
-    package_file_path = os.path.join(request.registry.settings['egg_path'],
+    package_file_path = os.path.join(settings['egg_path'],
                                      package_name, package_file)
     if os.path.exists(package_file_path):
         log.debug('Found local file in repository for: `%s`', package_file)
@@ -310,7 +316,7 @@ def get_package(request):
             raise HTTPException(pypi_response.status_code)
 
         #now after we successfully downloaded the file create the package files
-        package_path = os.path.join(request.registry.settings['egg_path'],
+        package_path = os.path.join(settings['egg_path'],
                                     package_name)
         if not os.path.exists(package_path):
             os.makedirs(package_path)

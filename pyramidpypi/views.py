@@ -11,6 +11,7 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest, HTTPOk, HTTPNotFound, \
     HTTPException
+from pyramid.settings import asbool
 
 log = logging.getLogger(__name__)
 
@@ -217,10 +218,11 @@ def list_versions(request):
     # everytime we want to read package versions
     force_remote = True
     egg_path = request.registry.settings['egg_path']
+    proxy_mode = asbool(request.registry.settings['proxy_mode'])
     package = request.matchdict.get('package')
     package_path = os.path.join(egg_path, package)
 
-    if not os.path.isdir(package_path) or force_remote:
+    if proxy_mode and (not os.path.isdir(package_path) or force_remote):
         if force_remote:
             log.debug('Force package list from pypi server')
         else:

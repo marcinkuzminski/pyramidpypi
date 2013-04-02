@@ -2,6 +2,9 @@ PyramidPyPI
 ===========
 
 This is a very simple pypi-like server written with the pyramid web framework.
+It also has a builtin download proxy, which in case package is not found
+will download it from location that official pypi server points to, and store
+for later usage.
 
 Installation
 ------------
@@ -30,7 +33,7 @@ Add your local egg server to you ``~/.pypirc``::
     [pyramidpypi]
     username: local_user
     password: local_pass
-    repository: http://127.0.0.1:6543/pypi
+    repository: http://127.0.0.1:6543/
 
 .. note::
 
@@ -44,5 +47,4 @@ Now you can simply upload your add with::
 
 And to install a package from it, simply do::
 
-    pip install -i http://127.0.0.1:6543/pypi/ <your package>
-
+    pip install -i http://127.0.0.1:6543/ <your package>

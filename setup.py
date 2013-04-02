@@ -10,11 +10,12 @@ requires = [
     'pyramid',
     'pyramid_debugtoolbar',
     'waitress',
-    ]
+    'requests==1.2.0'
+]
 
 setup(name='pyramidpypi',
-      version='0.1',
-      description='pyramidpypi - a very simply pypi server written in pyramid',
+      version='0.2',
+      description='pyramidpypi - a very simply pypi server and proxy written in pyramid',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
         "Programming Language :: Python",
@@ -22,7 +23,7 @@ setup(name='pyramidpypi',
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
         ],
-      author='Daniel Kraus',
+      author='Daniel Kraus, Marcin Kuzminski',
       author_email='dakra@tr0ll.net',
       url='https://github.com/dakra/pyramidpypi',
       keywords='web pyramid pylons pypi',

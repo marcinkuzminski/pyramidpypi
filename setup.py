@@ -7,9 +7,9 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
 requires = [
-    'pyramid',
+    'pyramid==1.4.0',
     'pyramid_debugtoolbar',
-    'waitress',
+    'waitress==0.8.2',
     'requests==1.2.0'
 ]
 
@@ -26,7 +26,7 @@ setup(name='pyramidpypi',
       author='Daniel Kraus, Marcin Kuzminski',
       author_email='dakra@tr0ll.net',
       url='https://github.com/dakra/pyramidpypi',
-      keywords='web pyramid pylons pypi',
+      keywords='web pyramid pylons pypi proxy',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,

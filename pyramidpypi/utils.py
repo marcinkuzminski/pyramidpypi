@@ -128,13 +128,12 @@ def find_external_links(url):
     """
     Look for links to files in a web page and returns a set.
     """
-    log.debug('Processing external sources link at %s' % (url))
+    log.debug('Processing external sources link at %s', url)
     links = []
     response = requests.get(url)
     if response.status_code != 200:
-        log.warning('Error while getting proxy info for: %s'
-                           'Errors details: %s', url,
-                           response.text)
+        log.warning('Error while getting proxy info for: %s '
+                    'Errors details: %s', url, response.text)
     else:
         if response.content:
             for l in get_links_from_html(response.content):
@@ -157,8 +156,8 @@ def get_external_pypi_links(pypi_server, package):
     url = urlparse.urljoin(pypi_server, 'simple/%s' % package)
     response = requests.get(url)
     if response.status_code != 200:
-        log.warning('Error while getting proxy info for: %s'
-                    'Errors details: %s' % (package, response.text))
+        log.warning('Error while getting proxy info for: %s '
+                    'Errors details: %s', package, response.text)
         raise HTTPException(response.status_code)
     content = response.content
 

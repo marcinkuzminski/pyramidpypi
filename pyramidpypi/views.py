@@ -20,7 +20,8 @@ log = logging.getLogger(__name__)
 def upload(request):
     """Receive package from `python setup.py sdist upload -r localeggserver`"""
     settings = pyramid.threadlocal.get_current_registry().settings
-
+    if not asbool(settings['enable_upload']):
+        raise HTTPBadRequest()
     name = request.params.get('name', '').lower()
     version = request.params.get('version')
     action = request.params.get(':action')

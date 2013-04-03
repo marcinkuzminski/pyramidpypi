@@ -58,10 +58,12 @@ def pypi_listing(request):
 @view_config(route_name='list_versions', renderer='package_list.mako')
 def list_versions(request):
     """List available versions for :request.matchdict:`package`"""
+    settings = pyramid.threadlocal.get_current_registry().settings
+
     # TODO: force remote should be dynamic so we don't hit pypi
     # everytime we want to read package versions
-    force_remote = True
-    settings = pyramid.threadlocal.get_current_registry().settings
+    force_remote = asbool(settings['force_remote_package_index'])
+
     egg_path = settings['egg_path']
     proxy_mode = asbool(settings['proxy_mode'])
     package = request.matchdict.get('package')

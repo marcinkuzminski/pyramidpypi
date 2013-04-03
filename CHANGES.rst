@@ -1,3 +1,12 @@
+0.3
+---
+
+-  local cached packages have priority over the remote ones and are always
+   displayed instead of remote ones
+-  configuration options
+-  fixes
+-  formatting
+
 0.2
 ---
 

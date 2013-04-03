@@ -45,18 +45,15 @@ def upload(request):
 def pypi_listing(request):
     """List all available packages eggs including different versions"""
     settings = pyramid.threadlocal.get_current_registry().settings
-
     egg_path = settings['egg_path']
     egg_url = settings['egg_url']
-    packages = glob.glob(os.path.join(egg_path, '*', '*'))
-    links = ['..%s%s' % (egg_url, p[len(egg_path):]) for p in packages]
-    packages = [os.path.split(p)[1] for p in packages]
-
-    return dict(title="All available eggs", links=links, packages=packages)
+    packages_links = [(os.path.split(p)[1], '..%s%s' % (egg_url, p[len(egg_path):]))
+             for p in glob.glob(os.path.join(egg_path, '*', '*'))]
+    return dict(title="All available eggs", packages_links=packages_links)
 
 
 @view_config(route_name='list_versions', renderer='package_list.mako')
-def list_versions(request):
+def list_package_versions(request):
     """List available versions for :request.matchdict:`package`"""
     settings = pyramid.threadlocal.get_current_registry().settings
 
@@ -68,31 +65,35 @@ def list_versions(request):
     proxy_mode = asbool(settings['proxy_mode'])
     package = request.matchdict.get('package')
     package_path = os.path.join(egg_path, package)
+    package_list = os.listdir(package_path)
+    cached_eggs = get_egg_files(package_list)
+    log.debug("versions cached for package `%s`: %s",
+              package, ', '.join(cached_eggs))
+    packages_links = [(p, request.static_url(os.path.join(package_path, p)))
+                      for p in package_list]
 
     if proxy_mode and (not os.path.isdir(package_path) or force_remote):
         if force_remote:
             log.debug('Force package list from pypi server')
         else:
             log.debug('Did not found package: `%s` in local repository. '
-                      'Using proxy.' % (package))
+                      'Using proxy.', package)
         pypi_server = settings['pypi_server']
 
         try:
-            packages, links = get_external_pypi_links(pypi_server, package)
+            _packages, _links = get_external_pypi_links(pypi_server, package)
         except HTTPException as e:
-            packages = links = []
+            _packages = _links = []
 
-    else:
-        package_list = os.listdir(package_path)
-        cached_eggs = get_egg_files(package_list)
-        log.debug("versions cached for package `%s`: %s"
-                  % (package, ', '.join(cached_eggs)))
-        packages = package_list
-        links = [request.static_url(os.path.join(package_path, p))
-                 for p in packages]
+        if _packages and _links:
+            #put remote locations into already cached results
+            _cached_packages = [x[0] for x in packages_links]
+            for p, l in zip(_packages, _links):
+                if p not in _cached_packages:
+                    packages_links += [(p, l)]
 
     return dict(title="All versions for {package}".format(package=package),
-                links=links, packages=packages)
+                packages_links=packages_links)
 
 
 @view_config(route_name='list_packages', renderer='package_list.mako')
@@ -105,10 +106,11 @@ def list_packages(request):
     egg_path = settings['egg_path']
     if not os.path.exists(egg_path):
         os.makedirs(egg_path)
-    packages = os.listdir(os.path.join(egg_path))
-    links = [request.route_url('list_versions', package=p) for p in packages]
+    packages_links = [(p, request.route_url('list_versions', package=p))
+                      for p in os.listdir(os.path.join(egg_path))
+                      if not p.startswith('.')]
 
-    return dict(title="All packages", links=links, packages=packages)
+    return dict(title="All packages", packages_links=packages_links)
 
 
 @view_config(route_name='get_package')
@@ -143,14 +145,14 @@ def get_package(request):
                             'packages/%s/%s/%s/%s'
                         % (package_type, letter, package_name, package_file))
 
-        log.debug('Starting to download: `%s` using the url: %s'
-                  % (package_file, url))
+        log.debug('Starting to download: `%s` using the url: %s',
+                  package_file, url)
 
         pypi_response = requests.get(url, stream=True)
         log.debug('Finished downloading package: `%s`', package_file)
 
         if pypi_response.status_code != 200:
-            log.warning('Error response while downloading for proxy: %s'
+            log.warning('Error response while downloading for proxy: %s '
                     'Response details: %s', package_file, pypi_response.text)
             raise HTTPException(pypi_response.status_code)
 
@@ -164,7 +166,7 @@ def get_package(request):
         filecontent = pypi_response.raw.data
         with open(os.path.join(package_file_path), 'wb') as egg_file:
             egg_file.write(filecontent)
-        log.debug('stored file %s in cache' % (package_file_path))
+        log.debug('stored file %s in cache', package_file_path)
         with open(package_file_path + '.md5', 'wb') as md5_output:
             md5_output.write(hashlib.md5(filecontent).hexdigest())
 

@@ -14,9 +14,10 @@ requires = [
 ]
 
 setup(name='pyramidpypi',
-      version='0.2',
-      description='pyramidpypi - a very simply pypi server and proxy written in pyramid',
-      long_description=README + '\n\n' +  CHANGES,
+      version='0.3',
+      description=('pyramidpypi - a very simply pypi server and '
+                   'proxy written in pyramid'),
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",
         "Framework :: Pylons",
@@ -34,7 +35,7 @@ setup(name='pyramidpypi',
       tests_require=requires,
       test_suite="pyramidpypi",
       license='ISC',
-      entry_points = """\
+      entry_points="""\
       [paste.app_factory]
       main = pyramidpypi:main
       """,

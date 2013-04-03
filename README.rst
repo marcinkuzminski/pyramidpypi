@@ -47,5 +47,3 @@ To install a package from it, simply do::
 You can simply upload your packages with::
 
     python setup.py sdist upload -r pyramidpypi
-
-

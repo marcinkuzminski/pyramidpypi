@@ -65,14 +65,17 @@ def list_package_versions(request):
     proxy_mode = asbool(settings['proxy_mode'])
     package = request.matchdict.get('package')
     package_path = os.path.join(egg_path, package)
-    package_list = os.listdir(package_path)
-    cached_eggs = get_egg_files(package_list)
-    log.debug("versions cached for package `%s`: %s",
-              package, ', '.join(cached_eggs))
-    packages_links = [(p, request.static_url(os.path.join(package_path, p)))
-                      for p in package_list]
 
-    if proxy_mode and (not os.path.isdir(package_path) or force_remote):
+    packages_links = []
+    if os.path.isdir(package_path):
+        package_list = os.listdir(package_path)
+        cached_eggs = get_egg_files(package_list)
+        log.debug("versions cached for package `%s`: %s",
+                  package, ', '.join(cached_eggs))
+        packages_links = [(p, request.static_url(os.path.join(package_path, p)))
+                          for p in package_list]
+
+    if proxy_mode and force_remote:
         if force_remote:
             log.debug('Force package list from pypi server')
         else:

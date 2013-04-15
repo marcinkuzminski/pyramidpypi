@@ -18,6 +18,7 @@ def main(global_config, **settings):
     config.add_route('pypi_listing', '/pypi/')
     config.add_route('list_all', '/egg-index/')
 
+    config.add_route('list_versions_cache', '/c/{package}/')
     config.add_route('list_versions', '/{package}/')
     #config.add_route('get_version', '/{package}/{version}')
 

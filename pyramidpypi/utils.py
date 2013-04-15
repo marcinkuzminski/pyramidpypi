@@ -145,6 +145,18 @@ def find_external_links(url):
     return links
 
 
+def get_internal_pypi_links(request, package_path, package):
+    packages_links = []
+    if os.path.isdir(package_path):
+        package_list = os.listdir(package_path)
+        cached_eggs = get_egg_files(package_list)
+        log.debug("versions cached for package `%s`: %s",
+                  package, ', '.join(cached_eggs))
+        packages_links = [(p, request.static_url(os.path.join(package_path, p)))
+                          for p in package_list]
+    return packages_links
+
+
 def get_external_pypi_links(pypi_server, package):
     """
     Get's list of version with links to given package from given pypi_server

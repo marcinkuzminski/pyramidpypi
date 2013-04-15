@@ -12,7 +12,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest, HTTPOk, HTTPException
 
 from pyramidpypi.utils import asbool, get_mimetype, get_external_pypi_links,\
-    get_egg_files
+    get_egg_files, get_internal_pypi_links
 log = logging.getLogger(__name__)
 
 
@@ -58,7 +58,7 @@ def list_package_versions(request):
     settings = pyramid.threadlocal.get_current_registry().settings
 
     # TODO: force remote should be dynamic so we don't hit pypi
-    # everytime we want to read package versions
+    # every time we want to read package versions
     force_remote = asbool(settings['force_remote_package_index'])
 
     egg_path = settings['egg_path']
@@ -66,14 +66,7 @@ def list_package_versions(request):
     package = request.matchdict.get('package')
     package_path = os.path.join(egg_path, package)
 
-    packages_links = []
-    if os.path.isdir(package_path):
-        package_list = os.listdir(package_path)
-        cached_eggs = get_egg_files(package_list)
-        log.debug("versions cached for package `%s`: %s",
-                  package, ', '.join(cached_eggs))
-        packages_links = [(p, request.static_url(os.path.join(package_path, p)))
-                          for p in package_list]
+    packages_links = get_internal_pypi_links(request, package_path, package)
 
     if proxy_mode and force_remote:
         if force_remote:
@@ -94,6 +87,22 @@ def list_package_versions(request):
             for p, l in zip(_packages, _links):
                 if p not in _cached_packages:
                     packages_links += [(p, l)]
+
+    return dict(title="All versions for {package}".format(package=package),
+                packages_links=packages_links)
+
+
+@view_config(route_name='list_versions_cache', renderer='package_list.mako')
+def list_cached_package_versions(request):
+    """List available versions for :request.matchdict:`package`"""
+    settings = pyramid.threadlocal.get_current_registry().settings
+
+    egg_path = settings['egg_path']
+    proxy_mode = asbool(settings['proxy_mode'])
+    package = request.matchdict.get('package')
+    package_path = os.path.join(egg_path, package)
+
+    packages_links = get_internal_pypi_links(request, package_path, package)
 
     return dict(title="All versions for {package}".format(package=package),
                 packages_links=packages_links)

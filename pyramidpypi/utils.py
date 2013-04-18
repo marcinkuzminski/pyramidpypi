@@ -130,6 +130,8 @@ def find_external_links(url):
     """
     log.debug('Processing external sources link at %s', url)
     links = []
+    if not url.startswith('http'):
+        return links
     response = requests.get(url)
     if response.status_code != 200:
         log.warning('Error while getting proxy info for: %s '

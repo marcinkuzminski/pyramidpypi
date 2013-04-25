@@ -60,13 +60,10 @@ def list_package_versions(request):
     # TODO: force remote should be dynamic so we don't hit pypi
     # every time we want to read package versions
     force_remote = asbool(settings['force_remote_package_index'])
-
-    egg_path = settings['egg_path']
     proxy_mode = asbool(settings['proxy_mode'])
     package = request.matchdict.get('package')
-    package_path = os.path.join(egg_path, package)
-
-    packages_links = get_internal_pypi_links(request, package_path, package)
+    packages_links = get_internal_pypi_links(request, package,
+                                             settings['egg_path'])
 
     if proxy_mode and force_remote:
         if force_remote:
@@ -98,11 +95,10 @@ def list_cached_package_versions(request):
     settings = pyramid.threadlocal.get_current_registry().settings
 
     egg_path = settings['egg_path']
-    proxy_mode = asbool(settings['proxy_mode'])
     package = request.matchdict.get('package')
-    package_path = os.path.join(egg_path, package)
 
-    packages_links = get_internal_pypi_links(request, package_path, package)
+    packages_links = get_internal_pypi_links(request, package,
+                                             settings['egg_path'])
 
     return dict(title="All versions for {package}".format(package=package),
                 packages_links=packages_links)

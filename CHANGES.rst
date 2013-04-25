@@ -1,3 +1,8 @@
+0.4
+---
+
+- introduced /c/ resource for cache only resources
+
 0.3
 ---
 

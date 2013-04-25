@@ -44,6 +44,13 @@ To install a package from it, simply do::
 
     pip install -i http://127.0.0.1:6543/ <your package>
 
+To use only cached version you can specify alternative URL and use::
+
+    pip install -i http://127.0.0.1:6543/c/ <your package>
+
+This will use packages cached on the disk, and skip pypi checking. Resulting in
+big speed boost
+
 You can simply upload your packages with::
 
     python setup.py sdist upload -r pyramidpypi

@@ -14,7 +14,7 @@ requires = [
 ]
 
 setup(name='pyramidpypi',
-      version='0.3',
+      version='0.4',
       description=('pyramidpypi - a very simply pypi server and '
                    'proxy written in pyramid'),
       long_description=README + '\n\n' + CHANGES,

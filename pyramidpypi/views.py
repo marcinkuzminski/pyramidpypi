@@ -93,10 +93,7 @@ def list_package_versions(request):
 def list_cached_package_versions(request):
     """List available versions for :request.matchdict:`package`"""
     settings = pyramid.threadlocal.get_current_registry().settings
-
-    egg_path = settings['egg_path']
     package = request.matchdict.get('package')
-
     packages_links = get_internal_pypi_links(request, package,
                                              settings['egg_path'])
 

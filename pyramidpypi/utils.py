@@ -152,16 +152,18 @@ def get_internal_pypi_links(request, package, package_location):
     packages_links = []
 
     def _package_exists(root, package_name):
-        for package in os.listdir(root):
-            if os.path.join(root, package).lower() == os.path.join(root, package_name).lower():
+        _join = os.path.join
+        for p in os.listdir(root):
+            if _join(root, p).lower() == _join(root, package_name).lower():
                 return True
+
     if _package_exists(package_location, package):
-        package_list = os.listdir(package_path)
-        cached_eggs = get_egg_files(package_list)
+        package_versions = os.listdir(package_path)
+        cached_eggs = get_egg_files(package_versions)
         log.debug("versions cached for package `%s`: %s",
                   package, ', '.join(cached_eggs))
-        packages_links = [(p, request.static_url(os.path.join(package_path, p)))
-                          for p in package_list]
+        packages_links = [(p, request.static_url(os.path.join(package_versions, p)))
+                          for p in package_versions]
     return packages_links
 
 

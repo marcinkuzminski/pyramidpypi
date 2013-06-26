@@ -100,7 +100,8 @@ def get_links_from_html(html_body):
     """
     from HTMLParser import HTMLParser
     links = []
-
+    from pip.index import HTMLPage
+    
     class MyHTMLParser(HTMLParser):
         def handle_starttag(self, tag, attrs):
             self.context_data = {}
@@ -213,6 +214,11 @@ def get_external_pypi_links(pypi_server, package):
                                 )
                                 packages.append(name)
                             external_processed_links.add(href)
+                else:
+                    #proably external link without rel
+                    if url_is_egg_file(lnk_obj.path):
+                        links.append(convert_to_internal_url(href, package, os.path.basename(lnk_obj.path)))
+                        packages.append(os.path.basename(lnk_obj.path))
         else:
             # local link to pypi.python.org
             if href.startswith('../../packages/source'):

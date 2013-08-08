@@ -7,7 +7,7 @@ import requests
 import hashlib
 
 import pyramid
-from pyramid.response import Response
+from pyramid.response import Response, FileResponse
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest, HTTPOk, HTTPException
 
@@ -184,13 +184,11 @@ def get_package(request):
 @view_config(route_name='robots')
 def static_robots(context, request):
     _here = os.path.dirname(__file__)
-    with open(os.path.join( _here, 'static', 'robots.txt')) as f:
-        body = f.read()
-    return Response(content_type='text/plain', body=body)
+    return FileResponse(os.path.join(_here, 'static', 'robots.txt'),
+                        request=request, content_type='text/plain')
 
 @view_config(route_name='favicon')
 def static_favicon(context, request):
     _here = os.path.dirname(__file__)
-    with open(os.path.join( _here, 'static', 'favicon.ico')) as f:
-        body = f.read()
-    return Response(content_type='image/x-icon', body=body)
+    return FileResponse(os.path.join(_here, 'static', 'favicon.ico'),
+                        request=request, content_type='image/x-icon')

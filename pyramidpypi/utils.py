@@ -185,6 +185,8 @@ def get_external_pypi_links(pypi_server, package):
     """
 
     url = urlparse.urljoin(pypi_server, 'simple/%s' % package)
+    if not url.endswith('/'):
+        url += '/'
     response = requests.get(url)
     if response.status_code != 200:
         log.warning('Error while getting proxy info for: %s '

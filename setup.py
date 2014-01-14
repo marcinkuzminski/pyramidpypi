@@ -7,14 +7,14 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
 requires = [
-    'pyramid==1.4.0',
+    'pyramid==1.4.4',
     'pyramid_debugtoolbar',
-    'waitress==0.8.2',
+    'waitress==0.8.8',
     'requests==1.2.0'
 ]
 
 setup(name='pyramidpypi',
-      version='0.4',
+      version='0.5',
       description=('pyramidpypi - a very simply pypi server and '
                    'proxy written in pyramid'),
       long_description=README + '\n\n' + CHANGES,
@@ -26,7 +26,7 @@ setup(name='pyramidpypi',
         ],
       author='Daniel Kraus, Marcin Kuzminski',
       author_email='dakra@tr0ll.net',
-      url='https://github.com/dakra/pyramidpypi',
+      url='https://github.com/marcinkuzminski/pyramidpypi',
       keywords='web pyramid pylons pypi proxy',
       packages=find_packages(),
       include_package_data=True,

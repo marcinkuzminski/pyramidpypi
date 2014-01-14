@@ -3,6 +3,8 @@ eggs
 *.cache
 *#*
 *.egg-info
+*.pid
+*.log
 .DS_Store
 .ropeproject
 .idea

@@ -4,7 +4,7 @@
     <title>${title}</title>
 </head>
 <body>
-    % for package, link in sorted(packages_links):
+    % for package, link in packages_links:
         <a href="${link}">${package}</a><br/>
     % endfor
 </body>

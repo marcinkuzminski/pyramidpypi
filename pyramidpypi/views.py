@@ -110,10 +110,9 @@ def list_packages(request):
     egg_path = settings['egg_path']
     if not os.path.exists(egg_path):
         os.makedirs(egg_path)
-    packages_links = [(p, request.route_url('list_versions', package=p))
+    packages_links = sorted([(p, request.route_url('list_versions', package=p))
                       for p in os.listdir(os.path.join(egg_path))
-                      if not p.startswith('.')]
-
+                      if not p.startswith('.')], key=lambda e: e[0].lower())
     return dict(title="All packages", packages_links=packages_links)
 
 @view_config(route_name='egg_url')

@@ -9,7 +9,7 @@ import hashlib
 import pyramid
 from pyramid.response import Response, FileResponse
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPBadRequest, HTTPOk, HTTPException
+from pyramid.httpexceptions import HTTPBadRequest, HTTPOk, HTTPException, HTTPNotFound
 
 from pyramidpypi.utils import asbool, get_mimetype, get_external_pypi_links,\
     get_egg_files, get_internal_pypi_links
@@ -35,7 +35,8 @@ def upload(request):
     if not os.path.exists(path):
         os.makedirs(path)
 
-    open(os.path.join(path, content.filename), 'wb').write(content.file.read())
+    with open(os.path.join(path, content.filename), 'wb') as f:
+        f.write(content.file.read())
 
     raise HTTPOk()
 
@@ -62,8 +63,7 @@ def list_package_versions(request):
     force_remote = asbool(settings['force_remote_package_index'])
     proxy_mode = asbool(settings['proxy_mode'])
     package = request.matchdict.get('package')
-    packages_links = get_internal_pypi_links(request, package,
-                                             settings['egg_path'])
+    packages_links = get_internal_pypi_links(request, package, settings['egg_path'])
 
     if proxy_mode and force_remote:
         if force_remote:
@@ -94,8 +94,7 @@ def list_cached_package_versions(request):
     """List available versions for :request.matchdict:`package`"""
     settings = pyramid.threadlocal.get_current_registry().settings
     package = request.matchdict.get('package')
-    packages_links = get_internal_pypi_links(request, package,
-                                             settings['egg_path'])
+    packages_links = get_internal_pypi_links(request, package, settings['egg_path'])
 
     return dict(title="All versions for {package}".format(package=package),
                 packages_links=packages_links)
@@ -117,6 +116,17 @@ def list_packages(request):
 
     return dict(title="All packages", packages_links=packages_links)
 
+@view_config(route_name='egg_url')
+def egg_package(request):
+    settings = pyramid.threadlocal.get_current_registry().settings
+    package_parts = request.matchdict.get('package')
+    package = '/'.join(package_parts)
+    package_file_path = os.path.join(settings['egg_path'], package)
+    if os.path.exists(package_file_path):
+        return FileResponse(package_file_path, request=request, cache_max_age=3600,
+                            content_type=get_mimetype(package_file_path))
+
+    raise HTTPNotFound(request.url)
 
 @view_config(route_name='get_package')
 @view_config(route_name='get_package_h')
@@ -134,8 +144,8 @@ def get_package(request):
     if os.path.exists(package_file_path):
         log.debug('Found local file in repository for: `%s`', package_file)
         # if the file exists, then use the local file.
-        response = Response(content_type=get_mimetype(package_file_path))
-        response.app_iter = open(package_file_path, 'rb')
+        response = FileResponse(package_file_path, request=request,
+                                content_type=get_mimetype(package_file_path))
         return response
     else:
         # Downloads the egg from pypi and saves it locally, then
@@ -146,8 +156,7 @@ def get_package(request):
             # the remote URL
             url = remote
         else:
-            url = urlparse.urljoin(pypi_server,
-                            'packages/%s/%s/%s/%s'
+            url = urlparse.urljoin(pypi_server, 'packages/%s/%s/%s/%s'
                         % (package_type, letter, package_name, package_file))
 
         log.debug('Starting to download: `%s` using the url: %s',
@@ -175,8 +184,8 @@ def get_package(request):
         with open(package_file_path + '.md5', 'wb') as md5_output:
             md5_output.write(hashlib.md5(filecontent).hexdigest())
 
-        response = Response(content_type=get_mimetype(package_file_path))
-        response.app_iter = open(package_file_path, 'rb')
+        response = FileResponse(package_file_path, request=request,
+                                content_type=get_mimetype(package_file_path))
         return response
 
 

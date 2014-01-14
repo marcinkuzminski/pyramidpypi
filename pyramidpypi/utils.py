@@ -38,8 +38,14 @@ def get_mimetype(file_path):
     mimetypes or can easily recognize them, should set this private
     attribute to indicate that type should *NOT* be calculated).
     """
-    import mimetypes
-    mtype, _encoding = mimetypes.guess_type(file_path)
+
+    if file_path.endswith((".tgz", ".gz", ".tar.gz")):
+        mtype = "application/x-gzip"
+    elif file_path.endswith(".bz2"):
+        mtype = "application/octet-stream"
+    else:
+        import mimetypes
+        mtype, _encoding = mimetypes.guess_type(file_path)
 
     if mtype is None:
         mtype = 'application/octet-stream'
@@ -163,8 +169,10 @@ def get_internal_pypi_links(request, package, package_location):
         cached_eggs = get_egg_files(package_versions)
         log.debug("versions cached for package `%s`: %s",
                   package, ', '.join(cached_eggs))
-        packages_links = [(p, request.static_url(os.path.join(cached_package_path, p)))
-                          for p in package_versions]
+        for p_name in package_versions:
+            f_path = os.path.join(package, p_name)
+            packages_links.append((p_name,
+                                  request.route_url('egg_url', package=f_path)))
     return packages_links
 
 

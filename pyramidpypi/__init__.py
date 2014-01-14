@@ -7,12 +7,13 @@ def main(global_config, **settings):
     """
     config = Configurator(settings=settings)
 
-    config.add_static_view(settings['egg_url'], settings['egg_path'])
+
     # maybe someday I'll add nicer templates?
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('favicon', '/favicon.ico', request_method='GET')
     config.add_route('robots', '/robots.txt', request_method='GET')
 
+    config.add_route('egg_url', settings['egg_url']+'*package')
     config.add_route('list_packages', '/', request_method='GET')
     config.add_route('upload', '/', request_method='POST')
 
@@ -27,7 +28,7 @@ def main(global_config, **settings):
                      request_method='GET')
     config.add_route('get_package_h', '/packages/{package_type}/{letter}/{package_name}/{package_file}',
                      request_method='HEAD')
-    config.add_view(context='pyramid.exceptions.NotFound',
-                    view='pyramid.view.append_slash_notfound_view')
+    # config.add_view(context='pyramid.exceptions.NotFound',
+    #                 view='pyramid.view.append_slash_notfound_view')
     config.scan()
     return config.make_wsgi_app()

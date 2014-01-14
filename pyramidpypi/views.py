@@ -139,7 +139,7 @@ def get_package(request):
     log.debug('Downloading: `%s`', package_file)
 
     package_file_path = os.path.join(settings['egg_path'],
-                                     package_name, package_file)
+                                     package_name.lower(), package_file)
     if os.path.exists(package_file_path):
         log.debug('Found local file in repository for: `%s`', package_file)
         # if the file exists, then use the local file.

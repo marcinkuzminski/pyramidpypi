@@ -170,7 +170,7 @@ def get_internal_pypi_links(request, package, package_location):
         log.debug("versions cached for package `%s`: %s",
                   package, ', '.join(cached_eggs))
         for p_name in package_versions:
-            f_path = os.path.join(package, p_name)
+            f_path = os.path.join(package.lower(), p_name)
             packages_links.append((p_name,
                                   request.route_url('egg_url', package=f_path)))
     return packages_links

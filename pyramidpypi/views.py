@@ -171,7 +171,7 @@ def get_package(request):
 
         #now after we successfully downloaded the file create the package files
         package_path = os.path.join(settings['egg_path'],
-                                    package_name)
+                                    package_name.lower())
         if not os.path.exists(package_path):
             os.makedirs(package_path)
 
